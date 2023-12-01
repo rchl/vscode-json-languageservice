@@ -5,7 +5,7 @@
 
 import * as Parser from '../parser/jsonParser';
 import * as Strings from '../utils/strings';
-import { colorFromHex } from '../utils/colors';
+import { colorFromHex, colorFromHsl } from '../utils/colors';
 import * as l10n from '@vscode/l10n';
 
 import {
@@ -247,7 +247,8 @@ export class JSONDocumentSymbols {
 					if (!s.inverted && s.schema && (s.schema.format === 'color' || s.schema.format === 'color-hex') && s.node && s.node.type === 'string') {
 						const nodeId = String(s.node.offset);
 						if (!visitedNode[nodeId]) {
-							const color = colorFromHex(Parser.getNodeValue(s.node));
+							const nodeValue = Parser.getNodeValue(s.node);
+							const color = colorFromHex(nodeValue) || colorFromHsl(nodeValue);
 							if (color) {
 								const range = getRange(document, s.node);
 								result.push({ color, range });

@@ -64,6 +64,36 @@ export function colorFromHex(text: string): Color | undefined {
 	return undefined;
 }
 
+export function colorFromHsl(text: string): Color | undefined {
+	if (!text.startsWith('hsl')) {
+		return undefined;
+	}
+	const colorMatch = text.match(/hsl(a?)\(\s*(\d+)\s*,\s*(\d+)%\s*,\s*(\d+)%\s*(?:,\s*([\d.]+))?\)/i);
+	if (!colorMatch) {
+		return undefined;
+	}
+	const [_, hasAlpha, h, s, l, alpha] = colorMatch;
+	if (hasAlpha && alpha === undefined || !hasAlpha && alpha) {
+		return undefined;
+	}
+	const [red, green, blue] = HSLToRGB(Number.parseInt(h), Number.parseFloat(s), Number.parseFloat(l));
+	return {
+		red: red / 255.0,
+		green: green / 255.0,
+		blue: blue / 255.0,
+		alpha: hasAlpha ? Number.parseFloat(alpha) : 1
+	};
+}
+
+function HSLToRGB(h: number, s: number, l: number): [number, number, number] {
+	s /= 100;
+	l /= 100;
+	const k = (n: number) => (n + h / 30) % 12;
+	const a = s * Math.min(l, 1 - l);
+	const f = (n: number) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+	return [255 * f(0), 255 * f(8), 255 * f(4)];
+}
+
 export function colorFrom256RGB(red: number, green: number, blue: number, alpha: number = 1.0) {
 	return {
 		red: red / 255.0,
